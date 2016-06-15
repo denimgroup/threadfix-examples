@@ -1,0 +1,2 @@
+python-nmap==0.6.0
+threadfix_api==1.1.1
