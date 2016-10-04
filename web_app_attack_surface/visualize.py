@@ -117,11 +117,16 @@ class AttackSurfaceElement:
 parser = OptionParser()
 parser.add_option('--surfacejson', dest='surfacejson', help='JSON of attack surface')
 parser.add_option('--surfacejsonout', dest='surfacejsonout', help='Output JSON for the attack surface visualization')
+parser.add_option('--surfacejson_new', dest='surfacejson_new', help='JSON of attack surface')
+parser.add_option('--surfacejsonout_new', dest='surfacejsonout_new', help='Output JSON for the attack surface visualization')
 
 (options, args) = parser.parse_args()
 
 surface_json_filename = options.surfacejson
 surface_json_out_filename = options.surfacejsonout
+
+surface_json_filename_new = options.surfacejson_new
+surface_json_out_filename_new = options.surfacejsonout_new
 
 print 'JSON file with attack surface is: ' + surface_json_filename
 
@@ -131,9 +136,25 @@ with open(surface_json_filename) as json_data:
 	my_attack_surface = create_attack_surface_from_json_string(json_data)
 
 tree_json = my_attack_surface.print_to_json()
+print "Printing original JSON"
 print tree_json
 
 if surface_json_out_filename:
 	surface_json_out = open(surface_json_out_filename, "w")
 	surface_json_out.write(tree_json)
 	surface_json_out.close()
+
+my_attack_surface_new = None
+if surface_json_filename_new:
+	with open(surface_json_filename_new) as json_data_new:
+		my_attack_surface_new = create_attack_surface_from_json_string(json_data_new)
+	
+	tree_json_new = my_attack_surface_new.print_to_json()
+	print "Printing new JSON"
+	print tree_json_new
+
+	if surface_json_out_filename_new:
+		surface_json_out_new = open(surface_json_out_filename_new, "w")
+		surface_json_out_new.write(tree_json_new)
+		surface_json_out_new.close()
+
