@@ -116,10 +116,12 @@ class AttackSurfaceElement:
 
 parser = OptionParser()
 parser.add_option('--surfacejson', dest='surfacejson', help='JSON of attack surface')
+parser.add_option('--surfacejsonout', dest='surfacejsonout', help='Output JSON for the attack surface visualization')
 
 (options, args) = parser.parse_args()
 
 surface_json_filename = options.surfacejson
+surface_json_out_filename = options.surfacejsonout
 
 print 'JSON file with attack surface is: ' + surface_json_filename
 
@@ -130,3 +132,8 @@ with open(surface_json_filename) as json_data:
 
 tree_json = my_attack_surface.print_to_json()
 print tree_json
+
+if surface_json_out_filename:
+	surface_json_out = open(surface_json_out_filename, "w")
+	surface_json_out.write(tree_json)
+	surface_json_out.close()
