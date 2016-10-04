@@ -6,6 +6,32 @@ import StringIO
 
 CONST_PRESENT = 'Present'
 
+def create_attack_surface_from_json_string(json_string):
+	surface_json = json.load(json_string)
+
+
+	attack_surface = AttackSurfaceElement('/')
+	item_count = 0
+	for surface_location in surface_json:
+		print '[' + str(item_count) + ']: URL: ' + surface_location['urlPath'] + ', Parameters: ' + ', '.join(surface_location['parameters'])
+
+		full_path = surface_location['urlPath']
+		path_elements = full_path.split('/')
+
+		current_attack_surface_element = attack_surface
+		for path_element in path_elements:
+			print 'Got path_element: \'' + path_element + '\' from full_path: \'' + full_path + '\''
+			if path_element not in current_attack_surface_element.children:
+				print 'Don\'t have \'' + path_element + '\' yet. Add this path element.'
+				new_attack_surface_element = AttackSurfaceElement(path_element)
+				current_attack_surface_element.children[path_element] = new_attack_surface_element
+				current_attack_surface_element = new_attack_surface_element
+			else:
+				print 'Have the element \'' + path_element + '\'. Moving forward.'
+				current_attack_surface_element = current_attack_surface_element.children[path_element]
+	return attack_surface
+
+
 def _print_in_full_helper(self, output):
 	output.write('{')
 	if self.is_endpoint:
@@ -75,13 +101,14 @@ class AttackSurfaceElement:
 			retVal += '[' + ', '.join(self.parameters) + ']'
 		return retVal
 
-	def print_in_full(self):
+	def print_to_json(self):
 		output = StringIO.StringIO()
 		_print_in_full_helper(self, output)
 
-		print output.getvalue()
+		# print output.getvalue()
+		ret_val = output.getvalue()
 		output.close()
-
+		return ret_val
 
 
 	
@@ -97,35 +124,9 @@ surface_json_filename = options.surfacejson
 print 'JSON file with attack surface is: ' + surface_json_filename
 
 # Load up the attack surface JSON file
-surface_json = None
+my_attack_surface = None
 with open(surface_json_filename) as json_data:
-	surface_json = json.load(json_data)
+	my_attack_surface = create_attack_surface_from_json_string(json_data)
 
-
-attack_surface = AttackSurfaceElement('/')
-item_count = 0
-for surface_location in surface_json:
-	print '[' + str(item_count) + ']: URL: ' + surface_location['urlPath'] + ', Parameters: ' + ', '.join(surface_location['parameters'])
-
-	full_path = surface_location['urlPath']
-	path_elements = full_path.split('/')
-
-	current_attack_surface_element = attack_surface
-	for path_element in path_elements:
-		print 'Got path_element: \'' + path_element + '\' from full_path: \'' + full_path + '\''
-		if path_element not in current_attack_surface_element.children:
-			print 'Don\'t have \'' + path_element + '\' yet. Add this path element.'
-			new_attack_surface_element = AttackSurfaceElement(path_element)
-			current_attack_surface_element.children[path_element] = new_attack_surface_element
-			current_attack_surface_element = new_attack_surface_element
-		else:
-			print 'Have the element \'' + path_element + '\'. Moving forward.'
-			current_attack_surface_element = current_attack_surface_element.children[path_element]
-
-	# parameters = { }
-	# for param in surface_location['parameters']:
-	#	parameters[param] = CONST_PRESENT
-	# attack_surface[surface_location['urlPath']] = parameters
-	# item_count += 1
-
-attack_surface.print_in_full()
+tree_json = my_attack_surface.print_to_json()
+print tree_json
