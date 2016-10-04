@@ -24,44 +24,54 @@ def create_attack_surface_from_json_string(json_string):
 			if path_element not in current_attack_surface_element.children:
 				print 'Don\'t have \'' + path_element + '\' yet. Add this path element.'
 				new_attack_surface_element = AttackSurfaceElement(path_element)
+				if surface_location['parameters']:
+					new_attack_surface_element.setparameters(surface_location['parameters'])
 				current_attack_surface_element.children[path_element] = new_attack_surface_element
 				current_attack_surface_element = new_attack_surface_element
 			else:
 				print 'Have the element \'' + path_element + '\'. Moving forward.'
 				current_attack_surface_element = current_attack_surface_element.children[path_element]
+		item_count = item_count + 1
+
 	return attack_surface
 
 
 def _print_in_full_helper(self, output):
 	output.write('{')
-	if self.is_endpoint:
-		output.write('"name": "' + self.pathfragment + '", "children": [')
-		first = True
-		for param in self._parameters:
+	# if self.is_endpoint:
+	param_str_fragment = None
+	output.write('"name": "' + self.pathfragment)
+	if self.getparameters():
+		param_str_fragment = '[' + ", ".join(self.getparameters()) + ']'
+		output.write(param_str_fragment)
+	output.write('"')
+	
+		# first = True
+		# for param in self._parameters:
+		#	if not first:
+		#		# Append ", "
+		#		output.write(', ')
+		#	output.write('{"name": "' + param + '", "size": 100}')
+		#	first = False
+		#output.write(']')
+
+	#else:
+	#	output.write('"name": "' + self.pathfragment + '", ')
+	if bool(self._children):
+		# There are children
+		output.write(', "children": [')
+		first = True;
+		for child_name in self._children:
 			if not first:
-				# Append ", "
 				output.write(', ')
-			output.write('{"name": "' + param + '", "size": 100}')
+			child_node = self._children[child_name]
+			_print_in_full_helper(child_node, output)
 			first = False
 		output.write(']')
 
 	else:
-		output.write('"name": "' + self.pathfragment + '", ')
-		if bool(self._children):
-			# There are children
-			output.write('"children": [')
-			first = True;
-			for child_name in self._children:
-				if not first:
-					output.write(', ')
-				child_node = self._children[child_name]
-				_print_in_full_helper(child_node, output)
-				first = False
-			output.write(']')
-
-		else:
-			# No children. Make an endpoint
-			output.write('"size": 200')
+		# No children. Make an endpoint
+		output.write(', "size": 200')
 
 	output.write('}')
 
