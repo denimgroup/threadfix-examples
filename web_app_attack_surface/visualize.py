@@ -38,30 +38,17 @@ def create_attack_surface_from_json_string(json_string):
 
 def _print_in_full_helper(self, output):
 	output.write('{')
-	# if self.is_endpoint:
 	param_str_fragment = None
 	output.write('"name": "' + self.pathfragment)
 	if self.getparameters():
-		param_str_fragment = '[' + ", ".join(self.getparameters()) + ']'
+		param_str_fragment = '[' + ", ".join(sorted(self.getparameters())) + ']'
 		output.write(param_str_fragment)
 	output.write('"')
 	
-		# first = True
-		# for param in self._parameters:
-		#	if not first:
-		#		# Append ", "
-		#		output.write(', ')
-		#	output.write('{"name": "' + param + '", "size": 100}')
-		#	first = False
-		#output.write(']')
-
-	#else:
-	#	output.write('"name": "' + self.pathfragment + '", ')
 	if bool(self._children):
-		# There are children
 		output.write(', "children": [')
 		first = True;
-		for child_name in self._children:
+		for child_name in sorted(self._children):
 			if not first:
 				output.write(', ')
 			child_node = self._children[child_name]
@@ -70,7 +57,6 @@ def _print_in_full_helper(self, output):
 		output.write(']')
 
 	else:
-		# No children. Make an endpoint
 		output.write(', "size": 200')
 
 	output.write('}')
