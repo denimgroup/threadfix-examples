@@ -151,15 +151,6 @@ def list_added(list1, list2):
 	d = set(list1).intersection(set(list2))
 	return list(c - d)
 
-# def _pretty_print_attack_surface_element(my_element):
-#	ret_val = my_element.pathfragment
-#	if my_element.children:
-#		print 'Element has children: ' + str(my_element.children) + ' with type: ' + str(type(my_element.children)) + ' and keys: ' + str(my_element.children.keys())
-#		ret_val = ret_val + ' {' + ', '.join(my_element.children.keys()) + '}'
-#	return ret_val
-
-# def _print_diff_status(orig_ptr, current_ptr, current_path_elements):
-#	print 'STATUS: Original pathfragment: ' + _pretty_print_attack_surface_element(orig_ptr) + ', Current pathfragment: ' + _pretty_print_attack_surface_element(current_ptr) + ', path_elements: "' + '/'.join(current_path_elements) + '"'
 
 def make_list_from_json(my_json, element_name):
 	ret_val = []
@@ -187,6 +178,7 @@ parser.add_option('--surfacejson', dest='surfacejson', help='JSON of attack surf
 parser.add_option('--surfacejsonout', dest='surfacejsonout', help='Output JSON for the attack surface visualization')
 parser.add_option('--surfacejson_new', dest='surfacejson_new', help='JSON of attack surface')
 parser.add_option('--surfacejsonout_new', dest='surfacejsonout_new', help='Output JSON for the attack surface visualization')
+parser.add_option('--diff_out', dest='diff_out', help='Output JSON for the attack surface diff')
 
 (options, args) = parser.parse_args()
 
@@ -242,3 +234,7 @@ print 'Deleted attack surface: ' + ', '.join(my_diff.deleted)
 
 diff_json = my_diff.print_to_json()
 print 'Diff JSON is: ' + diff_json
+if options.diff_out:
+	diff_out_file = open(options.diff_out, "w")
+	diff_out_file.write(diff_json)
+	diff_out_file.close()
