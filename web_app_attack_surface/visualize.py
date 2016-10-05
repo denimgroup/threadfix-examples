@@ -274,19 +274,19 @@ def make_attack_surface_filename(commit_name):
 	return ret_val
 
 def compare_git_commits(repo_path, branch, start_commit, end_commit):
-	print 'Repo path: ' + repo_path + ' and branch: ' + branch
-	print 'Starting commit: ' + start_commit + ', Ending commit: ' + end_commit
+	# print 'Repo path: ' + repo_path + ' and branch: ' + branch
+	# print 'Starting commit: ' + start_commit + ', Ending commit: ' + end_commit
 
 	repo = Repo(repo_path)
 	git = Git(repo_path)
 	head = repo.heads[0]
 
-	cmd_str = 'java -jar bin/threadfix-endpoint-cli-2.4-SNAPSHOT-jar-with-dependencies.jar ' + repo_path + ' -json > ' + make_attack_surface_filename(start_commit)
-	print 'About to generate start attack surface with command: ' + cmd_str
+	cmd_str = 'java -jar bin/threadfix-endpoint-cli-2.4-SNAPSHOT-jar-with-dependencies.jar ' + repo_path + ' -json 2>/dev/null > ' + make_attack_surface_filename(start_commit)
+	# print 'About to generate start attack surface with command: ' + cmd_str
 	os.system(cmd_str)
 
-	cmd_str = 'java -jar bin/threadfix-endpoint-cli-2.4-SNAPSHOT-jar-with-dependencies.jar ' + repo_path + ' -json > ' + make_attack_surface_filename(end_commit)
-	print 'About to generate end attack surface with command: ' + cmd_str
+	cmd_str = 'java -jar bin/threadfix-endpoint-cli-2.4-SNAPSHOT-jar-with-dependencies.jar ' + repo_path + ' -json 2>/dev/null > ' + make_attack_surface_filename(end_commit)
+	# print 'About to generate end attack surface with command: ' + cmd_str
 	os.system(cmd_str)
 
 	ret_val = diff_attack_surface_files(make_attack_surface_filename(start_commit), make_attack_surface_filename(end_commit))
@@ -305,3 +305,23 @@ print 'Deleted attack surface: ' + ', '.join(git_diff_attack_surface.deleted)
 print 'Added percent: ' + str(git_diff_attack_surface.added_percent())
 print 'Deleted percent: ' + str(git_diff_attack_surface.deleted_percent())
 
+# This method is still pretty shaky
+def generate_attack_surface_change_history(repo_path, branch, outfile_name):
+	repo = Repo(repo_path)
+	git = Git(repo_path)
+	head = repo.heads[0]
+	commits = list(repo.iter_commits(branch))
+	commits.reverse()
+	first = True
+	previous_commit = None
+	for commit in commits:
+		if not first:
+			attack_surface_diff = compare_git_commits(repo_path, branch, previous_commit.hexsha, commit.hexsha)
+			current_path_count = attack_surface_diff.current_path_count
+			added = len(attack_surface_diff.added)
+			deleted = len(attack_surface_diff.deleted)
+			print 'Start commit: ' + str(previous_commit.hexsha) + ', Current commit: ' + commit.hexsha + ', Count: ' + str(current_path_count) + ', Added: ' + str(added) + ', Deleted: ' + str(deleted)
+		previous_commit = commit
+		first = False
+
+# generate_attack_surface_change_history(repo_path, branch, 'stuff')
