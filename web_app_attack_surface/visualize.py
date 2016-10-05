@@ -172,19 +172,11 @@ def make_list_from_json(my_json, element_name):
 def calculate_attack_surface_diff(orig, current):
 	ret_val = AttackSurfaceDiff()
 
-	# orig_ptr = orig
-	# current_ptr = current
-	# current_path_elements = []
-
 	orig_path_list = make_list_from_json(orig, 'urlPath')
 	current_path_list = make_list_from_json(current, 'urlPath')
 
-	# print '-----'
-	# print 'orig_path_list: ' + ', '.join(orig_path_list)
-	# print 'current_path_list: ' + ', '.join(current_path_list)
-	
-	ret_val.added = list_added(orig_path_list, current_path_list)
-	ret_val.deleted = list_deleted(orig_path_list, current_path_list)
+	ret_val.added = sorted(list_added(orig_path_list, current_path_list))
+	ret_val.deleted = sorted(list_deleted(orig_path_list, current_path_list))
 
 	return ret_val
 	
