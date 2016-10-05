@@ -6,6 +6,17 @@ import StringIO
 
 CONST_PRESENT = 'Present'
 
+def make_json_string_list(my_list):
+	ret_val = '['
+	first = True
+	for my_item in my_list:
+		if not first:
+			ret_val = ret_val + ', '
+		ret_val = ret_val + '"' + my_item + '"'
+		first = False
+	ret_val = ret_val + ']'
+	return ret_val
+
 def create_attack_surface_from_json_string(json_string):
 	surface_json = json.load(json_string)
 
@@ -61,6 +72,30 @@ def _print_in_full_helper(self, output):
 
 	output.write('}')
 
+class AttackSurfaceDiff:
+
+	def __init__(self):
+		self.added = []
+		self.deleted = []
+
+	def print_to_json(self):
+		ret_val = None
+		output = StringIO.StringIO()
+
+		output.write('{')
+		output.write('"added":')
+		output.write(make_json_string_list(self.added))
+		output.write(',')
+		output.write('"deleted":')
+		output.write(make_json_string_list(self.deleted))
+		output.write('}')
+
+		ret_val = output.getvalue()
+		output.close
+
+		return ret_val
+
+
 class AttackSurfaceElement:
 
 	def __init__(self, pathfragment):
@@ -106,7 +141,52 @@ class AttackSurfaceElement:
 		output.close()
 		return ret_val
 
+def list_deleted(list1, list2):
+	c = set(list1)
+	d = set(list1).intersection(set(list2))
+	return list(c - d)
 
+def list_added(list1, list2):
+	c = set(list2)
+	d = set(list1).intersection(set(list2))
+	return list(c - d)
+
+# def _pretty_print_attack_surface_element(my_element):
+#	ret_val = my_element.pathfragment
+#	if my_element.children:
+#		print 'Element has children: ' + str(my_element.children) + ' with type: ' + str(type(my_element.children)) + ' and keys: ' + str(my_element.children.keys())
+#		ret_val = ret_val + ' {' + ', '.join(my_element.children.keys()) + '}'
+#	return ret_val
+
+# def _print_diff_status(orig_ptr, current_ptr, current_path_elements):
+#	print 'STATUS: Original pathfragment: ' + _pretty_print_attack_surface_element(orig_ptr) + ', Current pathfragment: ' + _pretty_print_attack_surface_element(current_ptr) + ', path_elements: "' + '/'.join(current_path_elements) + '"'
+
+def make_list_from_json(my_json, element_name):
+	ret_val = []
+
+	for surface_location in my_json:
+		ret_val.append(surface_location['urlPath'])
+
+	return ret_val
+
+def calculate_attack_surface_diff(orig, current):
+	ret_val = AttackSurfaceDiff()
+
+	# orig_ptr = orig
+	# current_ptr = current
+	# current_path_elements = []
+
+	orig_path_list = make_list_from_json(orig, 'urlPath')
+	current_path_list = make_list_from_json(current, 'urlPath')
+
+	# print '-----'
+	# print 'orig_path_list: ' + ', '.join(orig_path_list)
+	# print 'current_path_list: ' + ', '.join(current_path_list)
+	
+	ret_val.added = list_added(orig_path_list, current_path_list)
+	ret_val.deleted = list_deleted(orig_path_list, current_path_list)
+
+	return ret_val
 	
 	
 
@@ -128,6 +208,7 @@ print 'JSON file with attack surface is: ' + surface_json_filename
 
 # Load up the attack surface JSON file
 my_attack_surface = None
+json_data = None
 with open(surface_json_filename) as json_data:
 	my_attack_surface = create_attack_surface_from_json_string(json_data)
 
@@ -141,6 +222,7 @@ if surface_json_out_filename:
 	surface_json_out.close()
 
 my_attack_surface_new = None
+json_data_new = None
 if surface_json_filename_new:
 	with open(surface_json_filename_new) as json_data_new:
 		my_attack_surface_new = create_attack_surface_from_json_string(json_data_new)
@@ -154,3 +236,17 @@ if surface_json_filename_new:
 		surface_json_out_new.write(tree_json_new)
 		surface_json_out_new.close()
 
+
+with open(surface_json_filename) as json_data:
+	json_data_js = json.load(json_data)
+
+with open(surface_json_filename_new) as json_data_new:
+	json_data_new_js = json.load(json_data_new)
+
+my_diff = calculate_attack_surface_diff(json_data_js, json_data_new_js)
+
+print 'Added attack surface: ' + ', '.join(my_diff.added)
+print 'Deleted attack surface: ' + ', '.join(my_diff.deleted)
+
+diff_json = my_diff.print_to_json()
+print 'Diff JSON is: ' + diff_json
