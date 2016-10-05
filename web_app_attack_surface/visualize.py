@@ -6,6 +6,17 @@ import StringIO
 
 CONST_PRESENT = 'Present'
 
+def list_deleted(list1, list2):
+	c = set(list1)
+	d = set(list1).intersection(set(list2))
+	return list(c - d)
+
+def list_added(list1, list2):
+	c = set(list2)
+	d = set(list1).intersection(set(list2))
+	return list(c - d)
+
+
 def make_json_string_list(my_list):
 	ret_val = '['
 	first = True
@@ -89,12 +100,18 @@ class AttackSurfaceDiff:
 
 		self.added = sorted(list_added(orig_path_list, current_path_list))
 		self.deleted = sorted(list_deleted(orig_path_list, current_path_list))
+		self.orig_path_count = len(orig_path_list)
+		self.current_path_count = len(current_path_list)
 
 	def print_to_json(self):
 		ret_val = None
 		output = StringIO.StringIO()
 
 		output.write('{')
+		output.write('"orig_path_count": ' + str(self.orig_path_count))
+		output.write(',')
+		output.write('"current_path_count": ' + str(self.current_path_count))
+		output.write(',')
 		output.write('"added":')
 		output.write(make_json_string_list(self.added))
 		output.write(',')
@@ -105,6 +122,15 @@ class AttackSurfaceDiff:
 		ret_val = output.getvalue()
 		output.close
 
+		return ret_val
+
+
+	def added_percent(self):
+		ret_val = len(self.added) / float(self.orig_path_count)
+		return ret_val
+
+	def deleted_percent(self):
+		ret_val = len(self.deleted) / float(self.orig_path_count)
 		return ret_val
 
 
@@ -151,16 +177,6 @@ class AttackSurfaceElement:
 		ret_val = output.getvalue()
 		output.close()
 		return ret_val
-
-def list_deleted(list1, list2):
-	c = set(list1)
-	d = set(list1).intersection(set(list2))
-	return list(c - d)
-
-def list_added(list1, list2):
-	c = set(list2)
-	d = set(list1).intersection(set(list2))
-	return list(c - d)
 
 
 
@@ -229,3 +245,6 @@ if options.diff_out:
 	diff_out_file = open(options.diff_out, "w")
 	diff_out_file.write(diff_json)
 	diff_out_file.close()
+
+print 'Added percent: ' + str(my_diff.added_percent())
+print 'Deleted percent: ' + str(my_diff.deleted_percent())
