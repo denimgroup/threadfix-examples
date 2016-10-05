@@ -72,11 +72,23 @@ def _print_in_full_helper(self, output):
 
 	output.write('}')
 
+def make_list_from_json(my_json, element_name):
+	ret_val = []
+
+	for surface_location in my_json:
+		ret_val.append(surface_location['urlPath'])
+
+	return ret_val
+
 class AttackSurfaceDiff:
 
-	def __init__(self):
-		self.added = []
-		self.deleted = []
+	def __init__(self, orig, current):
+
+		orig_path_list = make_list_from_json(orig, 'urlPath')
+		current_path_list = make_list_from_json(current, 'urlPath')
+
+		self.added = sorted(list_added(orig_path_list, current_path_list))
+		self.deleted = sorted(list_deleted(orig_path_list, current_path_list))
 
 	def print_to_json(self):
 		ret_val = None
@@ -118,7 +130,6 @@ class AttackSurfaceElement:
 	parameters = property(getparameters, setparameters, delparameters, "I'm the list of parameters that can be passed to this AttackSurfaceElement.")
 
 	def add_child(self, child):
-		# TODO - Do we need to check the type of convert from strings if needed?
 		self._children.append(child)
 
 	def getchildren(self):
@@ -152,26 +163,6 @@ def list_added(list1, list2):
 	return list(c - d)
 
 
-def make_list_from_json(my_json, element_name):
-	ret_val = []
-
-	for surface_location in my_json:
-		ret_val.append(surface_location['urlPath'])
-
-	return ret_val
-
-def calculate_attack_surface_diff(orig, current):
-	ret_val = AttackSurfaceDiff()
-
-	orig_path_list = make_list_from_json(orig, 'urlPath')
-	current_path_list = make_list_from_json(current, 'urlPath')
-
-	ret_val.added = sorted(list_added(orig_path_list, current_path_list))
-	ret_val.deleted = sorted(list_deleted(orig_path_list, current_path_list))
-
-	return ret_val
-	
-	
 
 parser = OptionParser()
 parser.add_option('--surfacejson', dest='surfacejson', help='JSON of attack surface')
@@ -227,7 +218,7 @@ with open(surface_json_filename) as json_data:
 with open(surface_json_filename_new) as json_data_new:
 	json_data_new_js = json.load(json_data_new)
 
-my_diff = calculate_attack_surface_diff(json_data_js, json_data_new_js)
+my_diff = AttackSurfaceDiff(json_data_js, json_data_new_js)
 
 print 'Added attack surface: ' + ', '.join(my_diff.added)
 print 'Deleted attack surface: ' + ', '.join(my_diff.deleted)
