@@ -1,7 +1,10 @@
 #!/usr/bin/python
 
+from git import Git
+from git import Repo
 import json
 from optparse import OptionParser
+import os
 import StringIO
 
 CONST_PRESENT = 'Present'
@@ -42,16 +45,16 @@ def create_attack_surface_from_json_string(json_string):
 
 		current_attack_surface_element = attack_surface
 		for path_element in path_elements:
-			print 'Got path_element: \'' + path_element + '\' from full_path: \'' + full_path + '\''
+			# print 'Got path_element: \'' + path_element + '\' from full_path: \'' + full_path + '\''
 			if path_element not in current_attack_surface_element.children:
-				print 'Don\'t have \'' + path_element + '\' yet. Add this path element.'
+				# print 'Don\'t have \'' + path_element + '\' yet. Add this path element.'
 				new_attack_surface_element = AttackSurfaceElement(path_element)
 				if surface_location['parameters']:
 					new_attack_surface_element.setparameters(surface_location['parameters'])
 				current_attack_surface_element.children[path_element] = new_attack_surface_element
 				current_attack_surface_element = new_attack_surface_element
 			else:
-				print 'Have the element \'' + path_element + '\'. Moving forward.'
+				# print 'Have the element \'' + path_element + '\'. Moving forward.'
 				current_attack_surface_element = current_attack_surface_element.children[path_element]
 		item_count = item_count + 1
 
@@ -186,6 +189,11 @@ parser.add_option('--surfacejsonout', dest='surfacejsonout', help='Output JSON f
 parser.add_option('--surfacejson_new', dest='surfacejson_new', help='JSON of attack surface')
 parser.add_option('--surfacejsonout_new', dest='surfacejsonout_new', help='Output JSON for the attack surface visualization')
 parser.add_option('--diff_out', dest='diff_out', help='Output JSON for the attack surface diff')
+parser.add_option('--repolocation', dest='repolocation', help='Path to Git repository location')
+parser.add_option('--branch', dest='branch', help='Branch in the Git repository')
+parser.add_option('--project', dest='project', help='Name of the project')
+parser.add_option('--start_commit', dest='start_commit', help='Starting Git commit for diffing')
+parser.add_option('--end_commit', dest='end_commit', help='Ending Git commit for diffing')
 
 (options, args) = parser.parse_args()
 
@@ -194,6 +202,7 @@ surface_json_out_filename = options.surfacejsonout
 
 surface_json_filename_new = options.surfacejson_new
 surface_json_out_filename_new = options.surfacejsonout_new
+
 
 print 'JSON file with attack surface is: ' + surface_json_filename
 
@@ -204,8 +213,8 @@ with open(surface_json_filename) as json_data:
 	my_attack_surface = create_attack_surface_from_json_string(json_data)
 
 tree_json = my_attack_surface.print_to_json()
-print "Printing original JSON"
-print tree_json
+# print "Printing original JSON"
+# print tree_json
 
 if surface_json_out_filename:
 	surface_json_out = open(surface_json_out_filename, "w")
@@ -219,8 +228,8 @@ if surface_json_filename_new:
 		my_attack_surface_new = create_attack_surface_from_json_string(json_data_new)
 	
 	tree_json_new = my_attack_surface_new.print_to_json()
-	print "Printing new JSON"
-	print tree_json_new
+	# print "Printing new JSON"
+	# print tree_json_new
 
 	if surface_json_out_filename_new:
 		surface_json_out_new = open(surface_json_out_filename_new, "w")
@@ -248,3 +257,51 @@ if options.diff_out:
 
 print 'Added percent: ' + str(my_diff.added_percent())
 print 'Deleted percent: ' + str(my_diff.deleted_percent())
+
+def diff_attack_surface_files(start_file, end_file):
+	with open(surface_json_filename) as json_data:
+		json_data_js = json.load(json_data)
+
+	with open(surface_json_filename_new) as json_data_new:
+		json_data_new_js = json.load(json_data_new)
+
+	ret_val = AttackSurfaceDiff(json_data_js, json_data_new_js)
+	return ret_val
+
+
+def make_attack_surface_filename(commit_name):
+	ret_val = 'work/' + commit_name + '_attacksurface.json'
+	return ret_val
+
+def compare_git_commits(repo_path, branch, start_commit, end_commit):
+	print 'Repo path: ' + repo_path + ' and branch: ' + branch
+	print 'Starting commit: ' + start_commit + ', Ending commit: ' + end_commit
+
+	repo = Repo(repo_path)
+	git = Git(repo_path)
+	head = repo.heads[0]
+
+	cmd_str = 'java -jar bin/threadfix-endpoint-cli-2.4-SNAPSHOT-jar-with-dependencies.jar ' + repo_path + ' -json > ' + make_attack_surface_filename(start_commit)
+	print 'About to generate start attack surface with command: ' + cmd_str
+	os.system(cmd_str)
+
+	cmd_str = 'java -jar bin/threadfix-endpoint-cli-2.4-SNAPSHOT-jar-with-dependencies.jar ' + repo_path + ' -json > ' + make_attack_surface_filename(end_commit)
+	print 'About to generate end attack surface with command: ' + cmd_str
+	os.system(cmd_str)
+
+	ret_val = diff_attack_surface_files(make_attack_surface_filename(start_commit), make_attack_surface_filename(end_commit))
+	return ret_val
+
+# Set up Git stuff
+repo_path = options.repolocation
+branch = options.branch
+start_commit = options.start_commit
+end_commit = options.end_commit
+
+git_diff_attack_surface = compare_git_commits(repo_path, branch, start_commit, end_commit)
+print 'Differences between git commit: ' + start_commit + ' and commit: ' + end_commit
+print 'Added attack surface: ' + ', '.join(git_diff_attack_surface.added)
+print 'Deleted attack surface: ' + ', '.join(git_diff_attack_surface.deleted)
+print 'Added percent: ' + str(git_diff_attack_surface.added_percent())
+print 'Deleted percent: ' + str(git_diff_attack_surface.deleted_percent())
+
