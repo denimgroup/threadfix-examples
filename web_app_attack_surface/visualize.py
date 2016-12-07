@@ -281,12 +281,14 @@ def compare_git_commits(repo_path, branch, start_commit, end_commit):
 	git = Git(repo_path)
 	head = repo.heads[0]
 
+	git.checkout(start_commit)
 	cmd_str = 'java -jar bin/threadfix-endpoint-cli-2.4-SNAPSHOT-jar-with-dependencies.jar ' + repo_path + ' -json 2>/dev/null > ' + make_attack_surface_filename(start_commit)
-	# print 'About to generate start attack surface with command: ' + cmd_str
+	print 'About to generate start attack surface with command: ' + cmd_str
 	os.system(cmd_str)
 
+	git.checkout(end_commit)
 	cmd_str = 'java -jar bin/threadfix-endpoint-cli-2.4-SNAPSHOT-jar-with-dependencies.jar ' + repo_path + ' -json 2>/dev/null > ' + make_attack_surface_filename(end_commit)
-	# print 'About to generate end attack surface with command: ' + cmd_str
+	print 'About to generate end attack surface with command: ' + cmd_str
 	os.system(cmd_str)
 
 	ret_val = diff_attack_surface_files(make_attack_surface_filename(start_commit), make_attack_surface_filename(end_commit))
@@ -306,6 +308,7 @@ print 'Added percent: ' + str(git_diff_attack_surface.added_percent())
 print 'Deleted percent: ' + str(git_diff_attack_surface.deleted_percent())
 
 # This method is still pretty shaky
+# Looking to make output that can be stuffed into this template https://bl.ocks.org/mbostock/3884955#data.tsv
 def generate_attack_surface_change_history(repo_path, branch, outfile_name):
 	repo = Repo(repo_path)
 	git = Git(repo_path)
