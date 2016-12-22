@@ -185,10 +185,10 @@ class AttackSurfaceElement:
 
 
 def diff_attack_surface_files(start_file, end_file):
-	with open(surface_json_filename) as json_data:
+	with open(start_file) as json_data:
 		json_data_js = json.load(json_data)
 
-	with open(surface_json_filename_new) as json_data_new:
+	with open(end_file) as json_data_new:
 		json_data_new_js = json.load(json_data_new)
 
 	ret_val = AttackSurfaceDiff(json_data_js, json_data_new_js)
