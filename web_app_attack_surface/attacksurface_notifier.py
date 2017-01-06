@@ -3,6 +3,7 @@
 from git import Git
 from git import Repo
 from hypchat import HypChat
+from jira import JIRA
 import json
 from optparse import OptionParser
 import os
@@ -15,10 +16,17 @@ execfile('attack_surface_lib.py')
 parser = OptionParser()
 parser.add_option('--repolocation', dest='repolocation', help='Path to Git repository location')
 parser.add_option('--branch', dest='branch', help='Branch in the Git repository')
+
 parser.add_option('--hipchat_token', dest='hipchat_token', help='HipChat API token')
 parser.add_option('--hipchat_room', dest='hipchat_room', help='HipChat room name')
+
 parser.add_option('--slack_token', dest='slack_token', help='Slack API token')
 parser.add_option('--slack_room', dest='slack_room', help='Slack room name')
+
+parser.add_option('--jira_username', dest='jira_username', help='JIRA username')
+parser.add_option('--jira_password', dest='jira_password', help='JIRA password')
+parser.add_option('--jira_url', dest='jira_url', help='JIRA server URL')
+parser.add_option('--jira_project', dest='jira_project', help='JIRA project')
 
 
 (options, args) = parser.parse_args()
@@ -27,7 +35,7 @@ do_hipchat = False
 do_slack = False
 do_jira = False
 
-# Set up Git stuff
+# Set up Git configuration
 repo_path = options.repolocation
 branch = options.branch
 if branch == None:
@@ -42,8 +50,6 @@ hipchat_access_token = options.hipchat_token
 hipchat_room_name = options.hipchat_room
 hc = None
 hc_room = None
-
-print hipchat_access_token
 
 if hipchat_access_token != None:
 	do_hipchat = True
@@ -60,6 +66,21 @@ if slack_access_token != None:
 	do_slack = True
 	print 'Will be sending message to Slack channel: ' + slack_room_name
 	slack = Slacker(slack_access_token)
+
+# Set up JIRA stuff
+jira_url = options.jira_url
+jira_project = None
+jira_connection = None
+
+if jira_url != None:
+	do_jira = True
+	jira_project = options.jira_project
+	print 'Will be creating issues for JIRA project: ' + jira_project
+	jira_username = options.jira_username
+	jira_password = options.jira_password
+
+	jira_options = {'server': jira_url}
+	jira_connection = JIRA(options=jira_options, basic_auth=(jira_username, jira_password))
 
 # Set up Git stuff
 
@@ -102,6 +123,13 @@ while 1:
 
 			if do_slack:
 				slack.chat.post_message(slack_room_name, chat_message)
+
+			if do_jira:
+				issue_summary = 'Manual pen test new attack surface'
+				issue_detail = 'Perform a manual penetration test for new attack surface:\n'
+				issue_detail += 'Added attack surface: ' + ', '.join(attack_surface_diff.added)
+
+				new_issue = jira_connection.create_issue(project=jira_project, summary=issue_summary, description=issue_detail, issuetype={'name': 'Bug'})
 			
 			print 'Updating latest commit to: ' + latest_commit_hash
 			starting_commit_hash = latest_commit_hash
