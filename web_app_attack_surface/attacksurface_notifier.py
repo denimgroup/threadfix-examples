@@ -6,6 +6,7 @@ from hypchat import HypChat
 import json
 from optparse import OptionParser
 import os
+from slacker import Slacker
 import StringIO
 import time
 
@@ -16,20 +17,49 @@ parser.add_option('--repolocation', dest='repolocation', help='Path to Git repos
 parser.add_option('--branch', dest='branch', help='Branch in the Git repository')
 parser.add_option('--hipchat_token', dest='hipchat_token', help='HipChat API token')
 parser.add_option('--hipchat_room', dest='hipchat_room', help='HipChat room name')
+parser.add_option('--slack_token', dest='slack_token', help='Slack API token')
+parser.add_option('--slack_room', dest='slack_room', help='Slack room name')
+
 
 (options, args) = parser.parse_args()
 
+do_hipchat = False
+do_slack = False
+do_jira = False
+
 # Set up Git stuff
 repo_path = options.repolocation
-branch = 'master'
 branch = options.branch
+if branch == None:
+	branch = 'master'
+
+if repo_path == None:
+	print 'Must enter a Git repository path. Exiting.'
+	exit(-1)
 
 # Set up HipChat stuff
-access_token = options.hipchat_token
-room_name = options.hipchat_room
+hipchat_access_token = options.hipchat_token
+hipchat_room_name = options.hipchat_room
+hc = None
+hc_room = None
 
-hc = HypChat(access_token)
-room = hc.get_room(room_name)
+print hipchat_access_token
+
+if hipchat_access_token != None:
+	do_hipchat = True
+	print 'Will be sending messages to HipChat room: ' + hipchat_room_name
+	hc = HypChat(hipchat_access_token)
+	hc_room = hc.get_room(hipchat_room_name)
+
+# Set up Slack stuff
+slack_access_token = options.slack_token
+slack_room_name = options.slack_room
+slack = None
+
+if slack_access_token != None:
+	do_slack = True
+	print 'Will be sending message to Slack channel: ' + slack_room_name
+	slack = Slacker(slack_access_token)
 
 # Set up Git stuff
 
@@ -42,7 +72,12 @@ starting_commit_hash = commits[0].hexsha
 
 # Say howdy
 
-room.message('ThreadFix HipChat bot is in the house and we are keeping an eye on branch ' + branch + ' starting with commit ' + starting_commit_hash)
+hello_message = 'ThreadFix Attack Surface bot is now active and we are keeping an eye on branch ' + branch + ' starting with commit ' + starting_commit_hash
+if do_hipchat:
+	hc_room.message(hello_message)
+
+if do_slack:
+	slack.chat.post_message(slack_room_name, hello_message)
 
 while 1:
 	# Check current commit
@@ -57,11 +92,16 @@ while 1:
 		attack_surface_diff = compare_git_commits(repo_path, branch, starting_commit_hash, latest_commit_hash)
 		if len(attack_surface_diff.added) > 0 or len(attack_surface_diff.deleted) > 0:
 			# Attack surface has changed
-			chat_message = 'The super-cool ThreadFix chat bot has identified that commit: ' + latest_commit_hash + '\n'
+			chat_message = 'The ThreadFix Attack Surface chat bot has identified that commit: ' + latest_commit_hash + '\n'
 			chat_message += 'Added attack surface: ' + ', '.join(attack_surface_diff.added) + '\n'
 			chat_message += 'Deleted attack surface: ' + ', '.join(attack_surface_diff.deleted)
 			print chat_message
-			room.message(chat_message)
+
+			if do_hipchat:
+				hc_room.message(chat_message)
+
+			if do_slack:
+				slack.chat.post_message(slack_room_name, chat_message)
 			
 			print 'Updating latest commit to: ' + latest_commit_hash
 			starting_commit_hash = latest_commit_hash
