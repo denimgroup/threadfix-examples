@@ -18,25 +18,30 @@ execfile('attack_surface_lib.py')
 def zap_scan_url(zap, api_key, full_url):
 	print 'Going to ZAP scan URL: ' + full_url
 	# Pull back the inital URL. This get is on the ZAP session's radar
-	result = zap.core.access_url(apikey=apikey, url=full_url)
+	result = zap.core.access_url(apikey=api_key, url=full_url)
 	time.sleep(2)
 
 	# Spider that URL to collect the paramters. Otherwise ZAP doesn't seem to know about them
-	result = zap.spider.scan(apikey=apikey, url=full_url, maxchildren=0, recurse=False, subtreeonly=True)
+	result = zap.spider.scan(apikey=api_key, url=full_url, maxchildren=0, recurse=False, subtreeonly=True)
+	print 'ZAP spider id: ' + result
 	# Despite the spider waiting code below, for some reason ZAP isn't adding the URL with the parameters
 	# to its list without this sleep() call. Probably something I'm doing wrong, but this hack works
 	# for the moment
-	time.sleep(2)
+	time.sleep(5)
 	while(int(zap.spider.status(result)) < 100):
+		print 'Wainting for spider...'
 		time.sleep(2)
 
 	# Get the list of all URLs we've found and cycle through all of them. This will make
 	# sure that we test the raw URL as well as the ZAP entries for that URL that have
 	# parameters
+	#
+	# TODO - Probably need to move this process so it is only done once. Otherwise we re-scan earlier URLs
+	# in situations where we have more than one new URL worty of attack surface
 	all_urls = zap.core.urls
 	for current_url in all_urls:
 		print 'Starting specific scan for URL: ' + current_url
-		result = zap.ascan.scan(apikey=apikey, url=current_url, recurse=False)
+		result = zap.ascan.scan(apikey=api_key, url=current_url, recurse=False)
 		print 'Result of starting scan: ' + result
 	
 
@@ -162,24 +167,15 @@ while 1:
 		print 'Checking attack surface for changes'
 		attack_surface_diff = compare_git_commits(repo_path, branch, starting_commit_hash, latest_commit_hash)
 		if len(attack_surface_diff.added) > 0 or len(attack_surface_diff.deleted) > 0:
-			# Attack surface has changed
-			chat_message = 'The ThreadFix Attack Surface chat bot has identified that commit: ' + latest_commit_hash + '\n'
-			chat_message += 'Added attack surface: ' + ', '.join(attack_surface_diff.added) + '\n'
-			chat_message += 'Deleted attack surface: ' + ', '.join(attack_surface_diff.deleted)
-			print chat_message
-
-			if do_hipchat:
-				hc_room.message(chat_message)
-
-			if do_slack:
-				slack.chat.post_message(slack_room_name, chat_message)
+			# Attack surface has changed!
+			zap_report = None
 
 			# Only need to test NEW attack surface with ZAP
 			if do_zap and attack_surface_diff.added > 0:
 				# Scan each of the new URLs
 				for new_page in attack_surface_diff.added:
 					full_url = base_url + new_page
-					zap_scan(zap, zap_token, new_page)
+					zap_scan_url(zap, zap_token, full_url)
 
 				# Wait for all scans to finish because all the scans were queued up
 				# asynchronously earlier
@@ -195,10 +191,12 @@ while 1:
 					if result['risk'] == 'High':
 						results_we_care_about.append(result)
 
-				zap_report = 'No important ZAP results were found'
 				if len(results_we_care_about) > 0:
-					zap_report = pprint.pformat(results_we_care_About)
-					print 'ZAP report'
+					# zap_report = pprint.pformat(results_we_care_about)
+					zap_report = ''
+					for result in results_we_care_about:
+						zap_report += result['alert'] + ' was found in new URL: ' + result['url'] + ' and parameter: ' + result['param'] + '\nFor further background on this type of vulnerability, see: ' + result['reference'] + '\n'
+					print 'ZAP report:'
 					print zap_report
 
 
@@ -210,6 +208,23 @@ while 1:
 
 				new_issue = jira_connection.create_issue(project=jira_project, summary=issue_summary, description=issue_detail, issuetype={'name': 'Bug'})
 
+			# Report any attack surface changes to the chat rooms. Include ZAP results if available
+
+			chat_message = 'The ThreadFix Attack Surface chat bot has identified that commit: ' + latest_commit_hash + '\n'
+			chat_message += 'Added attack surface: ' + ', '.join(attack_surface_diff.added) + '\n'
+			chat_message += 'Deleted attack surface: ' + ', '.join(attack_surface_diff.deleted) + '\n'
+
+			if zap_report != None:
+				chat_message += '\nResults of ZAP Scan:\n'
+				chat_message += zap_report + '\n'
+
+			print chat_message
+
+			if do_hipchat:
+				hc_room.message(chat_message)
+
+			if do_slack:
+				slack.chat.post_message(slack_room_name, chat_message)
 			
 			print 'Updating latest commit to: ' + latest_commit_hash
 			starting_commit_hash = latest_commit_hash
