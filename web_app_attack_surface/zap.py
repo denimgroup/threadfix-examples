@@ -1,5 +1,8 @@
 #!/usr/bin/python
-#
+
+# This script shows how to use ZAP to scan a specific URL and its parameters - only.
+# I spent some time figuring out what API calls were required and in what order, so
+# I figured I'd put this together for other folks to use as a base if they want to do the same thing.
 
 import pprint
 import time
@@ -28,6 +31,9 @@ time.sleep(2)
 # Spider that URL to collect the parameters. Otherwise ZAP doesn't seem to know about them
 result = zap.spider.scan(apikey=apikey, url=fullUrl, maxchildren=0, recurse=False, subtreeonly=True)
 print 'Spider: ' + result + ' initiated'
+# Despite the spider waiting code below, for some reason ZAP isn't adding the URL with the parameters
+# to its list without this sleep() call. Probably something I'm doing wrong, but this hack works
+# for the moment
 time.sleep(2)
 print 'Waiting for spidering to complete'
 while (int(zap.spider.status(result)) < 100):
