@@ -138,12 +138,3 @@ while 1:
 	else:
 		print 'Latest commit is still: ' + starting_commit_hash
 	time.sleep(10)
-
-
-# git_diff_attack_surface = compare_git_commits(repo_path, branch, start_commit, end_commit)
-# print 'Differences between git commit: ' + start_commit + ' and commit: ' + end_commit
-# print 'Added attack surface: ' + ', '.join(git_diff_attack_surface.added)
-# print 'Deleted attack surface: ' + ', '.join(git_diff_attack_surface.deleted)
-# print 'Added percent: ' + str(git_diff_attack_surface.added_percent())
-# print 'Deleted percent: ' + str(git_diff_attack_surface.deleted_percent())
-
