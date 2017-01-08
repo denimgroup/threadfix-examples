@@ -5,6 +5,7 @@ from git import Repo
 import json
 from optparse import OptionParser
 import os
+import pipes
 import StringIO
 import tempfile
 
@@ -203,7 +204,7 @@ def generate_attack_surface_enumeration_json_from_source_dir(source_dir):
 	print 'Source dir is: ' + source_dir
 	(junk,temp_file) = tempfile.mkstemp(suffix='.json')
 	print 'Temp file name is: ' + temp_file
-	cmd_str = 'java -jar bin/threadfix-endpoint-cli-2.4-SNAPSHOT-jar-with-dependencies.jar ' + source_dir + ' -json 2>/dev/null > ' + temp_file
+	cmd_str = 'java -jar bin/threadfix-endpoint-cli-2.4-SNAPSHOT-jar-with-dependencies.jar ' + pipes.quote(source_dir) + ' -json 2>/dev/null > ' + pipes.quote(temp_file)
 	print 'About to generate start attack surface with command: ' + cmd_str
 	os.system(cmd_str)
 	content = ''
@@ -220,12 +221,12 @@ def compare_git_commits(repo_path, branch, start_commit, end_commit):
 	head = repo.heads[0]
 
 	git.checkout(start_commit)
-	cmd_str = 'java -jar bin/threadfix-endpoint-cli-2.4-SNAPSHOT-jar-with-dependencies.jar ' + repo_path + ' -json 2>/dev/null > ' + make_attack_surface_filename(start_commit)
+	cmd_str = 'java -jar bin/threadfix-endpoint-cli-2.4-SNAPSHOT-jar-with-dependencies.jar ' + pipes.quote(repo_path) + ' -json 2>/dev/null > ' + pipes.quote(make_attack_surface_filename(start_commit))
 	print 'About to generate start attack surface with command: ' + cmd_str
 	os.system(cmd_str)
 
 	git.checkout(end_commit)
-	cmd_str = 'java -jar bin/threadfix-endpoint-cli-2.4-SNAPSHOT-jar-with-dependencies.jar ' + repo_path + ' -json 2>/dev/null > ' + make_attack_surface_filename(end_commit)
+	cmd_str = 'java -jar bin/threadfix-endpoint-cli-2.4-SNAPSHOT-jar-with-dependencies.jar ' + pipes.quote(repo_path) + ' -json 2>/dev/null > ' + pipes.quote(make_attack_surface_filename(end_commit))
 	print 'About to generate end attack surface with command: ' + cmd_str
 	os.system(cmd_str)
 

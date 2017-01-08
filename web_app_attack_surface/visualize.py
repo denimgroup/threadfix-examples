@@ -5,6 +5,7 @@ from git import Repo
 import json
 from optparse import OptionParser
 import os
+import pipes
 import StringIO
 
 CONST_PRESENT = 'Present'
@@ -282,12 +283,12 @@ def compare_git_commits(repo_path, branch, start_commit, end_commit):
 	head = repo.heads[0]
 
 	git.checkout(start_commit)
-	cmd_str = 'java -jar bin/threadfix-endpoint-cli-2.4-SNAPSHOT-jar-with-dependencies.jar ' + repo_path + ' -json 2>/dev/null > ' + make_attack_surface_filename(start_commit)
+	cmd_str = 'java -jar bin/threadfix-endpoint-cli-2.4-SNAPSHOT-jar-with-dependencies.jar ' + pipes.quote(repo_path) + ' -json 2>/dev/null > ' + pipes.quote(make_attack_surface_filename(start_commit))
 	print 'About to generate start attack surface with command: ' + cmd_str
 	os.system(cmd_str)
 
 	git.checkout(end_commit)
-	cmd_str = 'java -jar bin/threadfix-endpoint-cli-2.4-SNAPSHOT-jar-with-dependencies.jar ' + repo_path + ' -json 2>/dev/null > ' + make_attack_surface_filename(end_commit)
+	cmd_str = 'java -jar bin/threadfix-endpoint-cli-2.4-SNAPSHOT-jar-with-dependencies.jar ' + pipes.quote(repo_path) + ' -json 2>/dev/null > ' + pies.quote(make_attack_surface_filename(end_commit))
 	print 'About to generate end attack surface with command: ' + cmd_str
 	os.system(cmd_str)
 

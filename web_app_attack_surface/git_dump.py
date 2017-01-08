@@ -4,6 +4,7 @@ from git import Git
 from git import Repo
 from optparse import OptionParser
 import os
+import pipes
 
 parser = OptionParser()
 parser.add_option('--repolocation', dest='repolocation', help='Path to Git repository location')
@@ -30,6 +31,6 @@ commits.reverse()
 for commit in commits:
 	print 'Commit: ' + commit.hexsha + ' with date: ' + str(commit.committed_date)
 	git.checkout(commit.hexsha)
-	cmd_str = 'java -jar bin/threadfix-endpoint-cli-2.4-SNAPSHOT-jar-with-dependencies.jar ' + repo_path + ' -json > work/' + project + '_attacksurface_' + str(commit.committed_date) + '.json'
+	cmd_str = 'java -jar bin/threadfix-endpoint-cli-2.4-SNAPSHOT-jar-with-dependencies.jar ' + pipes.quote(repo_path) + ' -json > work/' + pipes.quote(project) + '_attacksurface_' + pipes.quote(str(commit.committed_date)) + '.json'
 	print 'About to generate attack surface with command: ' + cmd_str
 	os.system(cmd_str)
