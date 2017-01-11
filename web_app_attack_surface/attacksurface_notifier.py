@@ -34,10 +34,10 @@ def zap_scan_url(zap, api_key, full_url):
 
 	# Get the list of all URLs we've found and cycle through all of them. This will make
 	# sure that we test the raw URL as well as the ZAP entries for that URL that have
-	# parameters
+	# parameters that we got from the spidering process.
 	#
 	# TODO - Probably need to move this process so it is only done once. Otherwise we re-scan earlier URLs
-	# in situations where we have more than one new URL worty of attack surface
+	# in situations where we have more than one new URL worth of attack surface
 	all_urls = zap.core.urls
 	for current_url in all_urls:
 		print 'Starting specific scan for URL: ' + current_url
