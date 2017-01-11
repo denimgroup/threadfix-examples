@@ -13,10 +13,8 @@ target = 'http://localhost'
 apikey = 'nssfdfbktnk0ap1kbgudfq51vf'
 baseUrl = 'http://localhost/bodgeit/'
 targetPage = 'search.jsp'
-# targetPage = 'basket.jsp'
 fullUrl = baseUrl + targetPage
 
-zap = ZAPv2()
 zap = ZAPv2(proxies={'http': 'http://127.0.0.1:8088', 'https': 'http://127.0.0.1:8088'})
 
 # Get a new session so we start with a clean slate
