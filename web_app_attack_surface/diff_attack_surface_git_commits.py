@@ -30,6 +30,10 @@ git_diff_attack_surface = compare_git_commits(repo_path, branch, start_commit, e
 print 'Differences between git commit: ' + start_commit + ' and commit: ' + end_commit
 print 'Added attack surface: ' + ', '.join(git_diff_attack_surface.added)
 print 'Deleted attack surface: ' + ', '.join(git_diff_attack_surface.deleted)
+if calc_modified:
+	print 'Modified attack surface: ' + ', '.join(git_diff_attack_surface.modified)
 print 'Added percent: ' + str(git_diff_attack_surface.added_percent())
 print 'Deleted percent: ' + str(git_diff_attack_surface.deleted_percent())
+if calc_modified:
+	print 'Modified percent: ' + str(git_diff_attack_surface.modified_percent())
 

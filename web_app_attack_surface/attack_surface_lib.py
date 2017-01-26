@@ -97,15 +97,56 @@ def make_list_from_json(my_json, element_name):
 
 	return ret_val
 
+def make_modified_dict_from_json(my_json):
+	ret_val = { }
+
+	for surface_location in my_json:
+		file_path = surface_location['filePath']
+		url_path = surface_location['urlPath']
+
+		url_list = None
+		
+		if file_path in ret_val:
+			url_list = ret_val[file_path]
+		else:
+			url_list = []
+		url_list.append(url_path)
+
+		ret_val[file_path] = url_list
+
+	return ret_val
+
+def list_modified(mappings_dict, modified_files):
+	temp_dict = { }
+	placeholder = 'PLACEHOLDER'
+	for file in modified_files:
+		if file in mappings_dict:
+			url_list = mappings_dict[file]
+			for url in url_list:
+				temp_dict[url] = placeholder
+	
+	ret_val = temp_dict.keys()
+	return ret_val
+
 class AttackSurfaceDiff:
 
 	def __init__(self, orig, current, modified_files=None):
 
 		orig_path_list = make_list_from_json(orig, 'urlPath')
 		current_path_list = make_list_from_json(current, 'urlPath')
+		modified_dict = None
+
 
 		self.added = sorted(list_added(orig_path_list, current_path_list))
 		self.deleted = sorted(list_deleted(orig_path_list, current_path_list))
+
+		if modified_files != None:
+			modified_dict = make_modified_dict_from_json(current)
+			all_modified_including_added = sorted(list_modified(modified_dict, modified_files))
+			self.modified = [x for x in all_modified_including_added if x not in self.added]
+		else:
+			self.modified = [ ]
+
 		self.orig_path_count = len(orig_path_list)
 		self.current_path_count = len(current_path_list)
 
@@ -123,6 +164,9 @@ class AttackSurfaceDiff:
 		output.write(',')
 		output.write('"deleted":')
 		output.write(make_json_string_list(self.deleted))
+		output.write(',')
+		output.write('"modified":')
+		output.write(make_json_string_list(self.modified))
 		output.write('}')
 
 		ret_val = output.getvalue()
@@ -137,6 +181,10 @@ class AttackSurfaceDiff:
 
 	def deleted_percent(self):
 		ret_val = len(self.deleted) / float(self.orig_path_count)
+		return ret_val
+
+	def modified_percent(self):
+		ret_val = len(self.modified) / float(self.orig_path_count)
 		return ret_val
 
 
@@ -192,7 +240,7 @@ def diff_attack_surface_files(start_file, end_file, modified_files=None):
 	with open(end_file) as json_data_new:
 		json_data_new_js = json.load(json_data_new)
 
-	ret_val = AttackSurfaceDiff(json_data_js, json_data_new_js)
+	ret_val = AttackSurfaceDiff(json_data_js, json_data_new_js, modified_files)
 	return ret_val
 
 
@@ -214,7 +262,6 @@ def generate_attack_surface_enumeration_json_from_source_dir(source_dir):
 
 def determine_modified_files_between_commits(repo_path, branch, start_commit, end_commit):
 	ret_val = []
-	print 'Calculating modified files'
 
 	format='--name-only'
 
@@ -222,7 +269,7 @@ def determine_modified_files_between_commits(repo_path, branch, start_commit, en
 	differ = g.diff('%s..%s' % (start_commit, end_commit), format).split('\n')
 	for line in differ:
 		if len(line):
-			ret_val.append(line)
+			ret_val.append('/' + line)
 
 	return ret_val
 
@@ -246,8 +293,9 @@ def compare_git_commits(repo_path, branch, start_commit, end_commit, calc_coarse
 
 	if calc_coarse_modified:
 		changed_files = determine_modified_files_between_commits(repo_path, branch, start_commit, end_commit)
-
-	ret_val = diff_attack_surface_files(make_attack_surface_filename(start_commit), make_attack_surface_filename(end_commit))
+		ret_val = diff_attack_surface_files(make_attack_surface_filename(start_commit), make_attack_surface_filename(end_commit), changed_files)
+	else:
+		ret_val = diff_attack_surface_files(make_attack_surface_filename(start_commit), make_attack_surface_filename(end_commit))
 	return ret_val
 
 def generate_attack_surface_change_history(repo_path, branch, outfile_name):
