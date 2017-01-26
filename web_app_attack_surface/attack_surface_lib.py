@@ -99,7 +99,7 @@ def make_list_from_json(my_json, element_name):
 
 class AttackSurfaceDiff:
 
-	def __init__(self, orig, current):
+	def __init__(self, orig, current, modified_files=None):
 
 		orig_path_list = make_list_from_json(orig, 'urlPath')
 		current_path_list = make_list_from_json(current, 'urlPath')
@@ -185,7 +185,7 @@ class AttackSurfaceElement:
 		return ret_val
 
 
-def diff_attack_surface_files(start_file, end_file):
+def diff_attack_surface_files(start_file, end_file, modified_files=None):
 	with open(start_file) as json_data:
 		json_data_js = json.load(json_data)
 
@@ -212,7 +212,7 @@ def generate_attack_surface_enumeration_json_from_source_dir(source_dir):
 		content = content_file.read()
 	return content
 
-def compare_git_commits(repo_path, branch, start_commit, end_commit):
+def compare_git_commits(repo_path, branch, start_commit, end_commit, calc_coarse_modified=False):
 	# print 'Repo path: ' + repo_path + ' and branch: ' + branch
 	# print 'Starting commit: ' + start_commit + ', Ending commit: ' + end_commit
 
