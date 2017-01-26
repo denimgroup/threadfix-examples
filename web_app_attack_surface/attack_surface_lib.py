@@ -212,6 +212,20 @@ def generate_attack_surface_enumeration_json_from_source_dir(source_dir):
 		content = content_file.read()
 	return content
 
+def determine_modified_files_between_commits(repo_path, branch, start_commit, end_commit):
+	ret_val = []
+	print 'Calculating modified files'
+
+	format='--name-only'
+
+	g = Git(repo_path)
+	differ = g.diff('%s..%s' % (start_commit, end_commit), format).split('\n')
+	for line in differ:
+		if len(line):
+			ret_val.append(line)
+
+	return ret_val
+
 def compare_git_commits(repo_path, branch, start_commit, end_commit, calc_coarse_modified=False):
 	# print 'Repo path: ' + repo_path + ' and branch: ' + branch
 	# print 'Starting commit: ' + start_commit + ', Ending commit: ' + end_commit
@@ -229,6 +243,9 @@ def compare_git_commits(repo_path, branch, start_commit, end_commit, calc_coarse
 	cmd_str = 'java -jar bin/threadfix-endpoint-cli-2.4-SNAPSHOT-jar-with-dependencies.jar ' + pipes.quote(repo_path) + ' -json 2>/dev/null > ' + pipes.quote(make_attack_surface_filename(end_commit))
 	print 'About to generate end attack surface with command: ' + cmd_str
 	os.system(cmd_str)
+
+	if calc_coarse_modified:
+		changed_files = determine_modified_files_between_commits(repo_path, branch, start_commit, end_commit)
 
 	ret_val = diff_attack_surface_files(make_attack_surface_filename(start_commit), make_attack_surface_filename(end_commit))
 	return ret_val
