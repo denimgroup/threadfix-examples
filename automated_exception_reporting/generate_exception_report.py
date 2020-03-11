@@ -2,7 +2,7 @@
 
 import csv
 import sys
-from ThreadFixPythonApi import threadfixpro
+from ThreadFixProApi import threadfixpro
 
 def make_tags_list(tf_con, tags):
 	ret_val = []
