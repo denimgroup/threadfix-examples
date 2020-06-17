@@ -47,3 +47,20 @@ if start_time == None:
 
 print('Using StartURL: ' + start_url)
 print('Using StartTime: ' + start_time)
+
+
+SCAN = '<Scan>'
+
+infile = open(source_file, 'r')
+for line in infile:
+    outfile.write(line)
+
+    index = line.find(SCAN)
+    if index != -1:
+        outfile.write('<Name><![CDATA[Scan Thread 1 ( ' + start_url + ' )]]></Name>\n')
+        outfile.write('<ShortName><![CDATA[Scan Thread 1]]></ShortName>\n')
+        outfile.write('<StartURL><![CDATA[' + start_url + ']]></StartURL>\n')
+        outfile.write('<StartTime><![CDATA[' + start_time + ']]></StartTime>\n')
+
+infile.close()
+outfile.close()
