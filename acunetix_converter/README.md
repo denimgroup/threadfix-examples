@@ -10,6 +10,7 @@ Then run the converter utility using the command
 
 ```bash
 acunetix_converter.py <source_file> <destination_file>
+```
 
 ![Acunetix Pro Screen Shot](https://github.com/denimgroup/threadfix-examples/blob/master/acunetix_converter/screen_shot.png)
 
