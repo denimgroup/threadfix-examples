@@ -2,6 +2,26 @@
 
 import sys
 
+def update_severity_if_needed(line):
+    ret_val = line
+
+    SEVERITY = '<Severity><![CDATA['
+
+    index = line.find(SEVERITY)
+    if index != -1:
+        beginning = line[0:index + len(SEVERITY)]
+        middle = line[index + len(SEVERITY):index + len(SEVERITY) + 1].lower()
+        end = line[index + len(SEVERITY) + 1:]
+
+        print('Beginning: ' + beginning)
+        print('Middle: '  + middle)
+        print('End: ' + end)
+
+        line = beginning + middle + end
+        print('DEBUG: New line: ' + line)
+
+    return(line)
+
 if len(sys.argv) < 3:
     print('Usage: acunetix_converter.py <source_file> <destination_file>')
     exit(2)
@@ -53,6 +73,8 @@ SCAN = '<Scan>'
 
 infile = open(source_file, 'r')
 for line in infile:
+
+    line = update_severity_if_needed(line)
     outfile.write(line)
 
     index = line.find(SCAN)
