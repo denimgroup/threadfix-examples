@@ -1,0 +1,202 @@
+[
+    {
+        "filePath": "/Users/Dan/git/calculator/.eslintrc.js",
+        "messages": [
+            {
+                "ruleId": "no-undef",
+                "severity": 2,
+                "message": "'module' is not defined.",
+                "line": 1,
+                "column": 1,
+                "nodeType": "Identifier",
+                "messageId": "undef",
+                "endLine": 1,
+                "endColumn": 7
+            }
+        ],
+        "errorCount": 1,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "source": "module.exports = {\n    \"env\": {\n        \"browser\": true,\n        \"es2020\": true\n    },\n    \"extends\": [\n        \"eslint:recommended\",\n        \"plugin:react/recommended\"\n    ],\n    \"parserOptions\": {\n        \"ecmaFeatures\": {\n            \"jsx\": true\n        },\n        \"ecmaVersion\": 11,\n        \"sourceType\": \"module\"\n    },\n    \"plugins\": [\n        \"react\"\n    ],\n    \"rules\": {\n    }\n};\n",
+        "usedDeprecatedRules": []
+    },
+    {
+        "filePath": "/Users/Dan/git/calculator/src/component/App.js",
+        "messages": [
+            {
+                "ruleId": null,
+                "fatal": true,
+                "severity": 2,
+                "message": "Parsing error: Unexpected token =",
+                "line": 8,
+                "column": 9
+            }
+        ],
+        "errorCount": 1,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "source": "import React from \"react\";\nimport Display from \"./Display\";\nimport ButtonPanel from \"./ButtonPanel\";\nimport calculate from \"../logic/calculate\";\nimport \"./App.css\";\n\nexport default class App extends React.Component {\n  state = {\n    total: null,\n    next: null,\n    operation: null,\n  };\n\n  handleClick = buttonName => {\n    this.setState(calculate(this.state, buttonName));\n  };\n\n  render() {\n    return (\n      <div className=\"component-app\">\n        <Display value={this.state.next || this.state.total || \"0\"} />\n        <ButtonPanel clickHandler={this.handleClick} />\n      </div>\n    );\n  }\n}\n",
+        "usedDeprecatedRules": []
+    },
+    {
+        "filePath": "/Users/Dan/git/calculator/src/component/App.test.js",
+        "messages": [
+            {
+                "ruleId": "no-undef",
+                "severity": 2,
+                "message": "'it' is not defined.",
+                "line": 5,
+                "column": 1,
+                "nodeType": "Identifier",
+                "messageId": "undef",
+                "endLine": 5,
+                "endColumn": 3
+            }
+        ],
+        "errorCount": 1,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "source": "import React from \"react\";\nimport ReactDOM from \"react-dom\";\nimport App from \"./App\";\n\nit(\"renders without crashing\", () => {\n  const div = document.createElement(\"div\");\n  ReactDOM.render(<App />, div);\n});\n",
+        "usedDeprecatedRules": []
+    },
+    {
+        "filePath": "/Users/Dan/git/calculator/src/component/Button.js",
+        "messages": [
+            {
+                "ruleId": null,
+                "fatal": true,
+                "severity": 2,
+                "message": "Parsing error: Unexpected token =",
+                "line": 6,
+                "column": 20
+            }
+        ],
+        "errorCount": 1,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "source": "import React from \"react\";\nimport PropTypes from \"prop-types\";\nimport \"./Button.css\";\n\nexport default class Button extends React.Component {\n  static propTypes = {\n    name: PropTypes.string,\n    orange: PropTypes.bool,\n    wide: PropTypes.bool,\n    clickHandler: PropTypes.func,\n  };\n\n  handleClick = () => {\n    this.props.clickHandler(this.props.name);\n  };\n\n  render() {\n    const className = [\n      \"component-button\",\n      this.props.orange ? \"orange\" : \"\",\n      this.props.wide ? \"wide\" : \"\",\n    ];\n\n    return (\n      <div className={className.join(\" \").trim()}>\n        <button onClick={this.handleClick}>{this.props.name}</button>\n      </div>\n    );\n  }\n}\n",
+        "usedDeprecatedRules": []
+    },
+    {
+        "filePath": "/Users/Dan/git/calculator/src/component/ButtonPanel.js",
+        "messages": [
+            {
+                "ruleId": null,
+                "fatal": true,
+                "severity": 2,
+                "message": "Parsing error: Unexpected token =",
+                "line": 8,
+                "column": 20
+            }
+        ],
+        "errorCount": 1,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "source": "import Button from \"./Button\";\nimport React from \"react\";\nimport PropTypes from \"prop-types\";\n\nimport \"./ButtonPanel.css\";\n\nexport default class ButtonPanel extends React.Component {\n  static propTypes = {\n    clickHandler: PropTypes.func,\n  };\n\n  handleClick = buttonName => {\n    this.props.clickHandler(buttonName);\n  };\n\n  render() {\n    return (\n      <div className=\"component-button-panel\">\n        <div>\n          <Button name=\"AC\" clickHandler={this.handleClick} />\n          <Button name=\"+/-\" clickHandler={this.handleClick} />\n          <Button name=\"%\" clickHandler={this.handleClick} />\n          <Button name=\"÷\" clickHandler={this.handleClick} orange />\n        </div>\n        <div>\n          <Button name=\"7\" clickHandler={this.handleClick} />\n          <Button name=\"8\" clickHandler={this.handleClick} />\n          <Button name=\"9\" clickHandler={this.handleClick} />\n          <Button name=\"x\" clickHandler={this.handleClick} orange />\n        </div>\n        <div>\n          <Button name=\"4\" clickHandler={this.handleClick} />\n          <Button name=\"5\" clickHandler={this.handleClick} />\n          <Button name=\"6\" clickHandler={this.handleClick} />\n          <Button name=\"-\" clickHandler={this.handleClick} orange />\n        </div>\n        <div>\n          <Button name=\"1\" clickHandler={this.handleClick} />\n          <Button name=\"2\" clickHandler={this.handleClick} />\n          <Button name=\"3\" clickHandler={this.handleClick} />\n          <Button name=\"+\" clickHandler={this.handleClick} orange />\n        </div>\n        <div>\n          <Button name=\"0\" clickHandler={this.handleClick} wide />\n          <Button name=\".\" clickHandler={this.handleClick} />\n          <Button name=\"=\" clickHandler={this.handleClick} orange />\n        </div>\n      </div>\n    );\n  }\n}\n",
+        "usedDeprecatedRules": []
+    },
+    {
+        "filePath": "/Users/Dan/git/calculator/src/component/Display.js",
+        "messages": [
+            {
+                "ruleId": null,
+                "fatal": true,
+                "severity": 2,
+                "message": "Parsing error: Unexpected token =",
+                "line": 7,
+                "column": 20
+            }
+        ],
+        "errorCount": 1,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "source": "import React from \"react\";\nimport PropTypes from \"prop-types\";\n\nimport \"./Display.css\";\n\nexport default class Display extends React.Component {\n  static propTypes = {\n    value: PropTypes.string,\n  };\n\n  render() {\n    return (\n      <div className=\"component-display\">\n        <div>{this.props.value}</div>\n      </div>\n    );\n  }\n}\n",
+        "usedDeprecatedRules": []
+    },
+    {
+        "filePath": "/Users/Dan/git/calculator/src/index.js",
+        "messages": [],
+        "errorCount": 0,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "usedDeprecatedRules": []
+    },
+    {
+        "filePath": "/Users/Dan/git/calculator/src/logic/calculate.js",
+        "messages": [],
+        "errorCount": 0,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "usedDeprecatedRules": []
+    },
+    {
+        "filePath": "/Users/Dan/git/calculator/src/logic/calculate.test.js",
+        "messages": [
+            {
+                "ruleId": "no-undef",
+                "severity": 2,
+                "message": "'it' is not defined.",
+                "line": 28,
+                "column": 23,
+                "nodeType": "Identifier",
+                "messageId": "undef",
+                "endLine": 28,
+                "endColumn": 25
+            },
+            {
+                "ruleId": "no-undef",
+                "severity": 2,
+                "message": "'it' is not defined.",
+                "line": 28,
+                "column": 33,
+                "nodeType": "Identifier",
+                "messageId": "undef",
+                "endLine": 28,
+                "endColumn": 35
+            },
+            {
+                "ruleId": "no-undef",
+                "severity": 2,
+                "message": "'describe' is not defined.",
+                "line": 34,
+                "column": 1,
+                "nodeType": "Identifier",
+                "messageId": "undef",
+                "endLine": 34,
+                "endColumn": 9
+            }
+        ],
+        "errorCount": 3,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "source": "import calculate from \"./calculate\";\nimport chai from \"chai\";\n\n// https://github.com/chaijs/chai/issues/469\nchai.config.truncateThreshold = 0;\n\nconst expect = chai.expect;\n\nfunction pressButtons(buttons) {\n  const value = {};\n  buttons.forEach(button => {\n    Object.assign(value, calculate(value, button));\n  });\n  // no need to distinguish between null and undefined values\n  Object.keys(value).forEach(key => {\n    if (value[key] === null) {\n      delete value[key];\n    }\n  });\n  return value;\n}\n\nfunction expectButtons(buttons, expectation) {\n  expect(pressButtons(buttons)).to.deep.equal(expectation);\n}\n\nfunction test(buttons, expectation, only = false) {\n  const func = only ? it.only : it;\n  func(`buttons ${buttons.join(\",\")} -> ${JSON.stringify(expectation)}`, () => {\n    expectButtons(buttons, expectation);\n  });\n}\n\ndescribe(\"calculate\", function() {\n  test([\"6\"], { next: \"6\" });\n\n  test([\"6\", \"6\"], { next: \"66\" });\n\n  test([\"6\", \"+\", \"6\"], {\n    next: \"6\",\n    total: \"6\",\n    operation: \"+\",\n  });\n\n  test([\"6\", \"+\", \"6\", \"=\"], {\n    total: \"12\",\n  });\n\n  test([\"0\", \"0\", \"+\", \"0\", \"=\"], {\n    total: \"0\",\n  });\n\n  test([\"6\", \"+\", \"6\", \"=\", \"9\"], {\n    next: \"9\",\n  });\n\n  test([\"3\", \"+\", \"6\", \"=\", \"+\"], {\n    total: \"9\",\n    operation: \"+\",\n  });\n\n  test([\"3\", \"+\", \"6\", \"=\", \"+\", \"9\"], {\n    total: \"9\",\n    operation: \"+\",\n    next: \"9\",\n  });\n\n  test([\"3\", \"+\", \"6\", \"=\", \"+\", \"9\", \"=\"], {\n    total: \"18\",\n  });\n\n  // When '=' is pressed and there is not enough information to complete\n  // an operation, the '=' should be disregarded.\n  test([\"3\", \"+\", \"=\", \"3\", \"=\"], {\n    total: \"6\",\n  });\n\n  test([\"+\"], {\n    operation: \"+\",\n  });\n\n  test([\"+\", \"2\"], {\n    next: \"2\",\n    operation: \"+\",\n  });\n\n  test([\"+\", \"2\", \"+\"], {\n    total: \"2\",\n    operation: \"+\",\n  });\n\n  test([\"+\", \"2\", \"+\", \"+\"], {\n    total: \"2\",\n    operation: \"+\",\n  });\n\n  test([\"+\", \"2\", \"+\", \"5\"], {\n    next: \"5\",\n    total: \"2\",\n    operation: \"+\",\n  });\n\n  test([\"+\", \"2\", \"5\"], {\n    next: \"25\",\n    operation: \"+\",\n  });\n\n  test([\"+\", \"2\", \"5\"], {\n    next: \"25\",\n    operation: \"+\",\n  });\n\n  test([\"+\", \"6\", \"+\", \"5\", \"=\"], {\n    total: \"11\",\n  });\n\n  test([\"0\", \".\", \"4\"], {\n    next: \"0.4\",\n  });\n\n  test([\".\", \"4\"], {\n    next: \"0.4\",\n  });\n\n  test([\".\", \"4\", \"-\", \".\", \"2\"], {\n    total: \"0.4\",\n    next: \"0.2\",\n    operation: \"-\",\n  });\n\n  test([\".\", \"4\", \"-\", \".\", \"2\", \"=\"], {\n    total: \"0.2\",\n  });\n\n  // should clear the operator when AC is pressed\n  test([\"1\", \"+\", \"2\", \"AC\"], {});\n  test([\"+\", \"2\", \"AC\"], {});\n\n  test([\"4\", \"%\"], {\n    next: \"0.04\",\n  });\n\n  test([\"4\", \"%\", \"x\", \"2\", \"=\"], {\n    total: \"0.08\",\n  });\n\n  test([\"4\", \"%\", \"x\", \"2\"], {\n    total: \"0.04\",\n    operation: \"x\",\n    next: \"2\",\n  });\n\n  // the percentage sign should also act as '='\n  test([\"2\", \"x\", \"2\", \"%\"], {\n    total: \"0.04\",\n  });\n\n  //Test that pressing the multiplication or division sign multiple times should not affect the current computation\n  test([\"2\", \"x\", \"x\"], {\n    total: \"2\",\n    operation: \"x\"\n  });\n\n  test([\"2\", \"÷\", \"÷\"], {\n    total: \"2\",\n    operation: \"÷\"\n  });\n\n  test([\"2\", \"÷\", \"x\", \"+\", \"-\", \"x\"], {\n    total: \"2\",\n    operation: 'x'\n  });\n});\n",
+        "usedDeprecatedRules": []
+    },
+    {
+        "filePath": "/Users/Dan/git/calculator/src/logic/isNumber.js",
+        "messages": [],
+        "errorCount": 0,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "usedDeprecatedRules": []
+    },
+    {
+        "filePath": "/Users/Dan/git/calculator/src/logic/operate.js",
+        "messages": [],
+        "errorCount": 0,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "usedDeprecatedRules": []
+    }
+]
