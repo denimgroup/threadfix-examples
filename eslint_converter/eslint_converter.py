@@ -70,7 +70,10 @@ for file_entry in eslint_data:
         source_code_array = source_code.split('\n')
 
         finding = { }
-        finding['summary'] = message['ruleId']
+        if message['ruleId'] == None:
+            finding['summary'] = 'Parse error'
+        else:
+            finding['summary'] = message['ruleId']
         finding['description'] = message['message']
         finding['nativeSeverity'] = message['severity']
         tf_severity = convert_to_severity(message['severity'])
