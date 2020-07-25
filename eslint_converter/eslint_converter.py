@@ -63,6 +63,12 @@ for file_entry in eslint_data:
     for message in message_list:
         print('File entry ' + str(file_entry_count) + ', Message ' + str(message_count) + ': ' + str(message))
 
+        if file_entry['errorCount'] == 0 and file_entry['warningCount'] == 0:
+            continue
+
+        source_code = file_entry['source']
+        source_code_array = source_code.split('\n')
+
         finding = { }
         finding['summary'] = message['ruleId']
         finding['description'] = message['message']
@@ -80,7 +86,7 @@ for file_entry in eslint_data:
         data_flow['file'] = file_name
         data_flow['lineNumber'] = message['line']
         data_flow['columnNumber'] = message['column']
-        data_flow['text'] = 'FIXME'
+        data_flow['text'] = source_code_array[message['line'] - 1]
 
         # ruleId can be null for parse errors
         full_identifier = file_name + ':' + str(message['ruleId']) + ':' + file_name + ':' + str(message['line']) + ':' + str(message['column'])
