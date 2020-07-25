@@ -1,8 +1,24 @@
 #!/usr/bin/python3
 
 import datetime
+import hashlib
 import json
 import sys
+
+def convert_to_severity(severity):
+    print("Checking severity value of: " + str(severity))
+    ret_val = 'Unassigned'
+
+    if severity == 2:
+        ret_val = 'High'
+    elif severity == 1:
+        ret_val = 'Medium'
+    elif severity == 0:
+        ret_val = 'Info'
+
+    return(ret_val)
+
+
 
 if len(sys.argv) < 3:
     print('Usage: eslint_converter.py <source_file> <destination_file>')
@@ -39,7 +55,8 @@ for file_entry in eslint_data:
     print('File entry ' + str(file_entry_count) + ': ' + str(file_entry))
 
     file_name = file_entry['filePath']
-    parameter = 'JUNK'
+    # Not sure why SAST findings require a parameter, so let's punt
+    parameter = ''
 
     message_list = file_entry['messages']
     message_count = 0
@@ -48,7 +65,30 @@ for file_entry in eslint_data:
 
         finding = { }
         finding['summary'] = message['ruleId']
+        finding['description'] = message['message']
         finding['nativeSeverity'] = message['severity']
+        tf_severity = convert_to_severity(message['severity'])
+        finding['severity'] = tf_severity
+
+        static_details = { }
+
+        static_details['file'] = file_name
+        static_details['parameter'] = parameter
+
+        data_flow = { }
+
+        data_flow['file'] = file_name
+        data_flow['lineNumber'] = message['line']
+        data_flow['columnNumber'] = message['column']
+        data_flow['text'] = 'FIXME'
+
+        # ruleId can be null for parse errors
+        full_identifier = file_name + ':' + str(message['ruleId']) + ':' + file_name + ':' + str(message['line']) + ':' + str(message['column'])
+        finding['nativeId'] = hashlib.sha256(full_identifier.encode('utf-8')).hexdigest()
+
+        static_details['dataFlow'] = [ data_flow ]
+    
+        finding['staticDetails'] = static_details
 
         findings.append(finding)
 
