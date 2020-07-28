@@ -1,2 +1,2 @@
 # threadfix-synopsys3d
-Conver Synopsys 3D XML files to .threadfix files
+Convert Synopsys 3D XML files to .threadfix files
