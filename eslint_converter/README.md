@@ -1,4 +1,4 @@
-# Convert ESLintJSON Exports for Upload to ThreadFix
+# Convert ESLint JSON Exports for Upload to ThreadFix
 
 This repository contains a simple Python utility to convert JSON output exported from ESLint into the .threadfix format 
 
