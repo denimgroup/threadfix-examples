@@ -5,16 +5,20 @@ import sys
 from ThreadFixProApi import threadfixpro
 
 def create_apps(tf_connection, team_id, raw_line):
+    raw_line = raw_line.strip()
     print('Hosts to create apps for: ' + raw_line)
     individual_hosts = raw_line.split(' ')
     for host in individual_hosts:
-        host = host.rstrip()
-        print("Creating ThreadFix app for host: '" + host + "'")
-        result = tf_connection.ApplicationsAPI.create_application(team_id, host, 'https://' + host + "/")
-        if result.success:
-            print("Successfully created application: ' "+ host + "'")
+        host = host.strip()
+        if host != '':
+            print("Creating ThreadFix app for host: '" + host + "'")
+            result = tf_connection.ApplicationsAPI.create_application(team_id, host, 'https://' + host + "/")
+            if result.success:
+                print("Successfully created application: ' "+ host + "'")
+            else:
+                print("Problems creating application: '" + host + "'. Result: " + str(result))
         else:
-            print("Problems creating application: '" + host + "'. Result: " + str(result))
+            print('Blank hostname - will not create an application')
 
 
 if len(sys.argv) < 4:
