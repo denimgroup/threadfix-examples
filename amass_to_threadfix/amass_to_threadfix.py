@@ -50,21 +50,52 @@ else:
     print('Unable to find team: ' + team)
     exit(3)
 
+# Check to see if this is the first time amass_alert.sh has been run.
+# If it is, we'll need to grab -all- the outputs from this run and create
+# apps for them. Otherwise the amass track results will get us what we need
+
+is_first_run = True
+if os.path.exists('db/indexes.bolt'):
+    print('db/indexes.bolt exists - not first run')
+    is_first_run = False
+else:
+    print('db/indexes.bolt does not exist - first run')
+
+
 print('About to run amass_alert.sh script to find new hostnames')
 os.system("./amass_alert.sh")
 
-print('Opening all_identified_hosts.txt to check on latest entries')
-hosts_file = open('all_identified_hosts.txt', 'r')
-all_hosts_array = hosts_file.readlines()
-if(create_all):
-    print('Creating new ThreadFix applications for -all- identified hosts')
+if is_first_run:
+    print('First run. Opening amass_results.txt to get all entries')
+    hosts_file = open('amass_results.txt', 'r')
+    all_hosts_array = hosts_file.readlines()
     for host_line in all_hosts_array:
-        create_apps(tfp, team_id, host_line)
+        host_line = host_line.strip()
+        print("Host line: '" + host_line + "'")
+        host_array = host_line.split()
+        print('host_array: ' + str(host_array))
+        # For some reason all the Amass data sources don't seem to have embedded whitespace
+        # except for [Brute Forcing] results. And that sure does mess up what I expect
+        # from my call to .split() So let's handle that...
+        if host_array[0] == '[Brute':
+            host_to_create = host_array[2]
+        else:
+            host_to_create = host_array[1]
+        print("Host to create: '" + host_to_create + "'")
+        create_apps(tfp, team_id, host_to_create)
 else:
-    print('Creating ThreadFix applicatiions for the most recently identified apps')
-    if len(all_hosts_array) >= 1:
-        create_apps(tfp, team_id, all_hosts_array[len(all_hosts_array) - 1])
+    print('Not a first run. Opening all_identified_hosts.txt to check on latest entries')
+    hosts_file = open('all_identified_hosts.txt', 'r')
+    all_hosts_array = hosts_file.readlines()
+    if(create_all):
+        print('Creating new ThreadFix applications for -all- identified hosts')
+        for host_line in all_hosts_array:
+            create_apps(tfp, team_id, host_line)
     else:
-        print('Hosts file had no records')
+        print('Creating ThreadFix applicatiions for the most recently identified apps')
+        if len(all_hosts_array) >= 1:
+            create_apps(tfp, team_id, all_hosts_array[len(all_hosts_array) - 1])
+        else:
+            print('Hosts file had no records')
 
 
