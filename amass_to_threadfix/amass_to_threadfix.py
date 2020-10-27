@@ -53,6 +53,7 @@ else:
 # Check to see if this is the first time amass_alert.sh has been run.
 # If it is, we'll need to grab -all- the outputs from this run and create
 # apps for them. Otherwise the amass track results will get us what we need
+# This may not be needed for newer versions of amass
 
 is_first_run = True
 if os.path.exists('db/indexes.bolt'):
